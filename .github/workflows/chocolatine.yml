@@ -10,8 +10,25 @@ env:
   EXECUTABLES: "mysh"
 
 jobs:
+  determine_should_run:
+    name: Determine whether the workflow should run
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - name: Check branch and repository
+        id: check
+        run: |
+          branch="${{ github.head_ref || github.ref_name }}"
+          if [[ "$branch" == no-ga/* ]] || [[ "$MIRROR_SSH_URL" == *"${{ github.repository }}"* ]]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   check_compilation_and_coding_style:
-    if: ${{ !startsWith(github.head_ref || github.ref_name, 'no-ga/') && !contains(env.MIRROR_SSH_URL, github.repository) }}
+    needs: determine_should_run
+    if: needs.determine_should_run.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     container: epitechcontent/epitest-docker
     steps:
