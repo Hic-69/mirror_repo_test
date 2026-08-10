@@ -6,7 +6,7 @@ name: Chocolatine
     types: [opened]
 
 env:
-  MIRROR_SSH_URL: "git@github.com:EpitechPromo/mirror-repo.git"
+  MIRROR_SSH_URL: "git@github.com:Hic-69/mirror_repo_test.git"
   EXECUTABLES: "mysh"
 
 jobs:
@@ -23,9 +23,7 @@ jobs:
         run: banana-check-repo .
       - name: Build project
         timeout-minutes: 2
-        env:
-          CC: epiclang
-        run: make
+        run: make CC=epiclang
       - name: Report coding style errors as annotations
         id: coding_style
         run: |

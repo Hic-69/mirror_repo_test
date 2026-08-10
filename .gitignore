@@ -1,0 +1,15 @@
+unit_tests
+mysh
+.vscode
+*.o
+*~
+\#*#
+a.out
+vgcore.*
+my_segfaults.c
+*.gcda
+*.gcno
+tester.sh
+tests/tests.sample
+epi_tester/
+tmp_tester/
