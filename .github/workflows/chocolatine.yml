@@ -60,3 +60,16 @@ jobs:
             fi
           done
           exit $status
+
+  run_tests:
+    needs: check_compilation_and_coding_style
+    runs-on: ubuntu-latest
+    container: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Run tests
+        timeout-minutes: 2
+        run: make tests_run
