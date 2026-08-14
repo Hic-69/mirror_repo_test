@@ -8,6 +8,7 @@ name: Chocolatine
 env:
   MIRROR_SSH_URL: "git@github.com:Hic-69/mirror_repo_test.git"
   EXECUTABLES: "mysh"
+  BANNED_FUNCTIONS: "strcpy,strcat,sprintf,gets"
 
 jobs:
   determine_should_run:
@@ -38,6 +39,20 @@ jobs:
           fetch-depth: 1
       - name: Run banana-check-repo
         run: banana-check-repo .
+      - name: Check for banned functions
+        run: |
+          status=0
+          for func in $(echo "$BANNED_FUNCTIONS" | tr ',' ' '); do
+            matches=$(grep -rnE "\b${func}[[:space:]]*\(" --include="*.c" --include="*.h" --exclude-dir=.git . || true)
+            if [ -n "$matches" ]; then
+              status=1
+              echo "$matches" | while IFS=: read -r file line rest; do
+                file=$(echo "$file" | sed 's|^\./||')
+                echo "::error file=${file},line=${line}::Banned function '${func}' is used"
+              done
+            fi
+          done
+          exit $status
       - name: Build project
         timeout-minutes: 2
         run: |
