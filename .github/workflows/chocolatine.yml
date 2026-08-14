@@ -37,29 +37,27 @@ jobs:
         with:
           fetch-depth: 1
       - name: Run banana-check-repo
-        run: banana-check-repo . > banana-output.log 2>&1 || true
-      - name: DEBUG show banana-check-repo raw output
-        run: |
-          echo "--- Contenu brut de banana-output.log ---"
-          cat banana-output.log
-          echo "--- Fin du fichier ---"
-          echo "--- Recherche de fichiers .log ou report dans le repo ---"
-          find . -iname "*.log" -o -iname "*report*"
+        run: banana-check-repo .
       - name: Build project
         timeout-minutes: 2
-        run: make CC=epiclang
+        run: |
+          make CC=epiclang > build-output.log 2>&1
+          status=$?
+          cat build-output.log
+          exit $status
       - name: Report coding style errors as annotations
         id: coding_style
         run: |
           has_errors=0
-          grep -E "^[^:]+:[0-9]+:" banana-output.log > style-errors.txt || true
-          if [ -s style-errors.txt ]; then
+          grep -E "warning: \[Banana\]" build-output.log > style-warnings.txt || true
+          if [ -s style-warnings.txt ]; then
             has_errors=1
           fi
-          while IFS=: read -r file line message; do
+          while IFS=: read -r file line col rest; do
             file=$(echo "$file" | sed 's|^\./||')
-            echo "::error file=${file},line=${line}::${message}"
-          done < style-errors.txt
+            message=$(echo "$rest" | sed 's/^ *//')
+            echo "::error file=${file},line=${line},col=${col}::${message}"
+          done < style-warnings.txt
           echo "has_errors=${has_errors}" >> "$GITHUB_OUTPUT"
       - name: Fail job if coding style errors were found
         if: steps.coding_style.outputs.has_errors == '1'
