@@ -30,7 +30,6 @@ SRC_FILES	=	src/prompt.c \
 			src/redirection.c \
 			src/write_utils.c \
 			src/git_branch.c \
-			src/bad_style_test.c \
 
 OBJ_MAIN	=	$(MAIN:.c=.o)
 
