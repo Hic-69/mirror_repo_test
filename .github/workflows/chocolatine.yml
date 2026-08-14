@@ -38,6 +38,13 @@ jobs:
           fetch-depth: 1
       - name: Run banana-check-repo
         run: banana-check-repo . > banana-output.log 2>&1 || true
+      - name: DEBUG show banana-check-repo raw output
+        run: |
+          echo "--- Contenu brut de banana-output.log ---"
+          cat banana-output.log
+          echo "--- Fin du fichier ---"
+          echo "--- Recherche de fichiers .log ou report dans le repo ---"
+          find . -iname "*.log" -o -iname "*report*"
       - name: Build project
         timeout-minutes: 2
         run: make CC=epiclang
