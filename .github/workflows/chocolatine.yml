@@ -37,7 +37,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Run banana-check-repo
-        run: banana-check-repo . 2>&1 | tee banana-output.log
+        run: banana-check-repo .
       - name: Build project
         timeout-minutes: 2
         run: make CC=epiclang
@@ -46,15 +46,14 @@ jobs:
         shell: bash
         run: |
           has_errors=0
-          while IFS= read -r report_line; do
-            if [[ "$report_line" =~ ^([^[:space:]:]+):([0-9]+):[[:space:]]*(.*)$ ]]; then
+          if [ -s coding-style-reports.log ]; then
+            while IFS=',' read -r file line severity code message; do
+              [ -z "$file" ] && continue
               has_errors=1
-              file="${BASH_REMATCH[1]#./}"
-              line="${BASH_REMATCH[2]}"
-              message="${BASH_REMATCH[3]}"
-              echo "::error file=${file},line=${line}::${message}"
-            fi
-          done < banana-output.log
+              file="${file#./}"
+              echo "::error file=${file},line=${line}::[${severity}] ${code}: ${message}"
+            done < coding-style-reports.log
+          fi
           echo "has_errors=${has_errors}" >> "$GITHUB_OUTPUT"
       - name: Fail job if coding style errors were found
         if: steps.coding_style.outputs.has_errors == '1'
