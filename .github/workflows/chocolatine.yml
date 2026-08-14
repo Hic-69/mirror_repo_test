@@ -45,6 +45,17 @@ jobs:
           status=$?
           cat build-output.log
           exit $status
+      - name: Ensure only epiclang was used to compile
+        run: |
+          if grep -Eq "^(gcc|clang|cc|g\+\+|clang\+\+|tcc|icc)[[:space:]]" build-output.log; then
+            echo "::error::A compiler other than epiclang was used to build the project"
+            grep -E "^(gcc|clang|cc|g\+\+|clang\+\+|tcc|icc)[[:space:]]" build-output.log
+            exit 1
+          fi
+          if ! grep -q "^epiclang" build-output.log; then
+            echo "::error::epiclang was not used to build the project"
+            exit 1
+          fi
       - name: Report coding style errors as annotations
         id: coding_style
         run: |
